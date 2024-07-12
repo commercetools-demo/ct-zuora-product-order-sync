@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { logger } from '../utils/logger.utils';
 import {
+  ZuoraAccountSignupPayload,
   ZuoraCrudResponse,
   ZuoraObjectQueryProduct,
   ZuoraObjectQueryProductRateChargePlan,
@@ -8,6 +9,7 @@ import {
   ZuoraProductRatePlanChargePayload,
   ZuoraProductRatePlanPayload,
   ZuoraProductUpdatePayload,
+  ZuoraSignupResponse,
 } from '../types/zuora.types';
 
 class ZuoraSandboxClient {
@@ -121,12 +123,24 @@ class ZuoraSandboxClient {
   async createPrice(
     priceData: ZuoraProductRatePlanChargePayload
   ): Promise<ZuoraCrudResponse> {
-    console.log(priceData);
-    
     return this.makeAuthenticatedRequest(
       'POST',
       '/v1/object/product-rate-plan-charge',
       priceData
+    );
+  }
+
+  async createAccount(
+    accountData: ZuoraAccountSignupPayload
+  ): Promise<ZuoraSignupResponse> {
+    return this.makeAuthenticatedRequest('POST', '/v1/sign-up', accountData);
+  }
+
+  async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {
+    return this.makeAuthenticatedRequest(
+      'POST',
+      '/v1/action/accounts',
+      customerId
     );
   }
 

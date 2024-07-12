@@ -4,14 +4,16 @@ import {
 } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { logger } from '../utils/logger.utils';
-import { ZuoraCrudResponse, ZuoraObjectQueryProduct } from '../types/zuora.types';
+import {
+  ZuoraCrudResponse,
+  ZuoraObjectQueryProduct,
+} from '../types/zuora.types';
 import { validProduct } from '../utils/product-validator.utils';
 import { getPriceDetails } from '../utils/price.utils';
+import { LOCALE } from '../constants';
 const zuoraClient = new ZuoraSandboxClient();
 
 // Create a product
-
-export const LOCALE = 'en-US';
 
 export const productPublished = async (
   productMessage: ProductPublishedMessagePayload
@@ -40,13 +42,16 @@ export const productPublished = async (
   }
 };
 
-async function createPlan(variant: ProductVariant, productId: string): Promise<ZuoraCrudResponse> {
+async function createPlan(
+  variant: ProductVariant,
+  productId: string
+): Promise<ZuoraCrudResponse> {
   return zuoraClient.getPlanByProductId(productId).then(async (plan) => {
     if (plan) {
       return {
         Id: plan.id,
         Success: true,
-      }
+      };
     } else {
       const offerName = variant.attributes?.find(
         (attribute) => attribute.name === 'offeringName'

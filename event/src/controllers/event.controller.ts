@@ -3,7 +3,8 @@ import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { BasicMessageData } from '../types/message.types';
 import { ProductCreatedMessage } from '@commercetools/platform-sdk';
-import { productPublished } from './zuora.controller';
+import { productPublished } from './zuora.product.controller';
+import { customerCreated } from './zuora.account.controller';
 
 /**
  * Exposed event POST endpoint.
@@ -39,8 +40,15 @@ export const post = async (request: Request, response: Response) => {
     const jsonData: BasicMessageData = JSON.parse(decodedData);
     switch (jsonData.type) {
       case 'ProductPublished':
-        logger.info('Product publishing starts: ', jsonData.productProjection.id);
+        logger.info(
+          'Product publishing starts: ',
+          jsonData.productProjection.id
+        );
         productPublished(jsonData);
+        break;
+      case 'CustomerCreated':
+        logger.info('Customer starts: ', jsonData.customer.id);
+        customerCreated(jsonData);
         break;
 
       case 'OrderCreated':

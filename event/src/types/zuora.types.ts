@@ -30,6 +30,15 @@ export type ZuoraProductUpdatePayload = {
   SKU: string;
 };
 
+export type ZuoraSignupResponse = {
+  orderNumber: string;
+  status: string;
+  accountNumber: string;
+  accountId: string;
+  subscriptionNumber: string;
+  subscriptionId: string;
+  success: boolean;
+};
 export type ZuoraCrudResponse = {
   Id: string;
   Success: boolean;
@@ -63,4 +72,58 @@ export type ZuoraProductRatePlanChargePayload = {
   TriggerEvent: string;
   UOM?: string;
   UseDiscountSpecificAccountingCode: boolean;
+};
+
+export type ZuoraAccountSignupPayload = {
+  accountData?: {
+    accountNumber: string;
+    autoPay?: boolean;
+    billCycleDay: number;
+    billToContact: {
+      country: string;
+      firstName?: string;
+      lastName?: string;
+      state: string;
+      personalEmail?: string;
+    };
+    currency: string;
+    customFields?: {
+      [key: string]: string;
+    };
+    name: string;
+    paymentMethod?: {
+      makeDefault?: boolean;
+      secondTokenId?: string;
+      tokenId?: string;
+      type?: string;
+    };
+  };
+  accountIdentifierField?: string; // Map to CT customer id
+  options?: {
+    billingTargetDate?: string;
+    collectPayment?: boolean;
+    maxSubscriptionsPerAccount?: number;
+    runBilling?: boolean;
+  };
+  subscriptionData: {
+    invoiceSeparately?: boolean;
+    ratePlans?: {
+      productRatePlanId?: string;
+    }[];
+    startDate?: string;
+    terms?: {
+      autoRenew?: boolean;
+      initialTerm?: {
+        period?: number;
+        periodType?: string;
+        startDate?: string;
+        termType?: string;
+      };
+      renewalSetting?: string;
+      renewalTerms?: {
+        period?: number;
+        periodType?: string;
+      }[];
+    };
+  };
 };

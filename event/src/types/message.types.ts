@@ -1,3 +1,10 @@
-import { OrderCreatedMessagePayload, ProductCreatedMessagePayload, ProductPublishedMessagePayload } from "@commercetools/platform-sdk";
+import {
+  CustomerCreatedMessagePayload,
+  OrderCreatedMessagePayload,
+  ProductPublishedMessagePayload,
+} from '@commercetools/platform-sdk';
 
-export type BasicMessageData = ProductCreatedMessagePayload | ProductPublishedMessagePayload | OrderCreatedMessagePayload;
+export type BasicMessageData =
+  | CustomerCreatedMessagePayload
+  | ProductPublishedMessagePayload
+  | OrderCreatedMessagePayload;

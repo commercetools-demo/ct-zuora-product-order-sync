@@ -1,5 +1,5 @@
 import { ProductProjection } from '@commercetools/platform-sdk';
-import { LOCALE } from '../controllers/zuora.controller';
+import { LOCALE } from '../constants';
 
 export const validProduct = (productProjection: ProductProjection): boolean => {
   if (!productProjection.name?.[LOCALE]) {
@@ -7,7 +7,7 @@ export const validProduct = (productProjection: ProductProjection): boolean => {
   }
   const sellableAttribute = productProjection.masterVariant?.attributes?.find(
     (attribute) => attribute.name === 'sellable'
-  )
+  );
 
   if (!sellableAttribute || sellableAttribute.value === false) {
     return false;
