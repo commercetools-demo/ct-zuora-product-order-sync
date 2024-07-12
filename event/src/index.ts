@@ -8,11 +8,7 @@ import bodyParser from 'body-parser';
 import EventRoutes from './routes/event.route';
 import { logger } from './utils/logger.utils';
 
-import { readConfiguration } from './utils/config.utils';
 import { errorMiddleware } from './middleware/error.middleware';
-
-// Read env variables
-readConfiguration();
 
 const PORT = process.env.PORT || 8080;
 

@@ -5,7 +5,7 @@ import {
   Order,
 } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
-import { validOrder } from '../utils/order-validator';
+import { validOrder } from '../validators/order-validator';
 const zuoraClient = new ZuoraSandboxClient();
 
 export const orderCreated = async (

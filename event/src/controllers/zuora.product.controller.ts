@@ -8,7 +8,7 @@ import {
   ZuoraCrudResponse,
   ZuoraObjectQueryProduct,
 } from '../types/zuora.types';
-import { validProduct } from '../utils/product-validator.utils';
+import { validProduct } from '../validators/product-validator.utils';
 import { getPriceDetails } from '../utils/price.utils';
 import { LOCALE } from '../constants';
 const zuoraClient = new ZuoraSandboxClient();
