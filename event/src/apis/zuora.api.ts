@@ -1,11 +1,13 @@
 import fetch from 'node-fetch';
 import { logger } from '../utils/logger.utils';
 import {
+  Order,
   ZuoraAccountSignupPayload,
   ZuoraCrudResponse,
   ZuoraObjectQueryProduct,
   ZuoraObjectQueryProductRateChargePlan,
   ZuoraObjectQueryProductRatePlan,
+  ZuoraOrderCreatePayload,
   ZuoraProductRatePlanChargePayload,
   ZuoraProductRatePlanPayload,
   ZuoraProductUpdatePayload,
@@ -111,6 +113,20 @@ class ZuoraSandboxClient {
     );
   }
 
+  async getPlanBySKU(sku: string): Promise<ZuoraObjectQueryProductRatePlan> {
+    return this.getProductBySKU(sku).then((product) => {
+      if (!product) {
+        throw new Error('Product not found');
+      }
+      return this.getPlanByProductId(product.id).then((plan) => {
+        if (!plan) {
+          throw new Error('Product not found');
+        }
+        return plan;
+      });
+    });
+  }
+
   async getPlanByProductId(
     productId: string
   ): Promise<ZuoraObjectQueryProductRatePlan> {
@@ -182,7 +198,7 @@ class ZuoraSandboxClient {
     ).then((data) => data.data?.[0]);
   }
 
-  async createOrder(orderData: any): Promise<any> {
+  async createOrder(orderData: ZuoraOrderCreatePayload): Promise<Order> {
     return this.makeAuthenticatedRequest('POST', '/v1/orders', orderData);
   }
 }

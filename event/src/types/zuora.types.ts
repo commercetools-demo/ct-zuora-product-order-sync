@@ -127,3 +127,108 @@ export type ZuoraAccountSignupPayload = {
     };
   };
 };
+
+export type ZuoraOrderCreatePayload = {
+  description: string;
+  existingAccountNumber: string;
+  orderDate: string;
+  orderLineItems?: Array<{
+    billTo: string;
+    billingTrigger: string;
+    chargeAmountPerUnit: number;
+    customFields?: {
+      [key: string]: string;
+    };
+    deferredRevenueAccountingCode: string;
+    description: string;
+    itemName: string;
+    itemType: string;
+    listPricePerUnit: number;
+    ownerAccountNumber: string;
+    productCode: string;
+    purchaseOrderNumber: string;
+    quantity: number;
+    recognizedRevenueAccountingCode: string;
+    revenueRecognitionRule: string;
+    soldTo: string;
+    taxCode: string;
+    taxMode: string;
+    transactionEndDate: string;
+    transactionStartDate: string;
+  }>;
+  orderNumber?: string;
+  processingOptions?: {
+    applyCreditBalance: boolean;
+    billingOptions: {
+      creditMemoReasonCode: string;
+      targetDate: string;
+    };
+    collectPayment: boolean;
+    electronicPaymentOptions: {
+      authTransactionId: string;
+      gatewayOrderId: string;
+      paymentGatewayId: string;
+      paymentMethodId: string;
+    };
+    runBilling: boolean;
+  };
+  subscriptions: Array<{
+    orderActions: Array<{
+      createSubscription: CreateOrderSubscriptionAction;
+      triggerDates: Array<{
+        name: string;
+        triggerDate: string;
+      }>;
+      type: string;
+    }>;
+  }>;
+};
+
+export interface CreateOrderSubscriptionAction {
+  subscribeToRatePlans: Array<{
+    chargeOverrides?: Array<{
+      productRatePlanChargeId: string;
+      startDate: {
+        triggerEvent: string;
+      };
+    }>;
+    productRatePlanId: string;
+    uniqueToken?: string;
+    subscriptionRatePlanNumber: string;
+  }>;
+  subscriptionNumber?: string;
+  terms: {
+    autoRenew: boolean;
+    initialTerm: {
+      period: number;
+      periodType: string;
+      startDate: string;
+      termType: string;
+    };
+    renewalSetting: string;
+    renewalTerms: Array<{
+      period: number;
+      periodType: string;
+    }>;
+  };
+}
+
+export type Order = {
+  accountNumber: string;
+  invoiceNumbers: string[];
+  orderLineItems: {
+    id: string;
+    itemNumber: string;
+  }[];
+  orderNumber: string;
+  paidAmount: number;
+  paymentNumber: string;
+  status: string;
+  subscriptions: {
+    status: string;
+    subscriptionNumber: string;
+    subscriptionOwnerNumber: string;
+    subscriptionOwnerId: string;
+  }[];
+  success: boolean;
+};

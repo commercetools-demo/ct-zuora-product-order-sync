@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { BasicMessageData } from '../types/message.types';
-import { ProductCreatedMessage } from '@commercetools/platform-sdk';
 import { productPublished } from './zuora.product.controller';
 import { customerCreated } from './zuora.account.controller';
+import { orderCreated } from './zuora.order.controller';
 
 /**
  * Exposed event POST endpoint.
@@ -52,6 +52,9 @@ export const post = async (request: Request, response: Response) => {
         break;
 
       case 'OrderCreated':
+        logger.info('Customer starts: ', jsonData.order.id);
+
+        orderCreated(jsonData);
         break;
       default:
         logger.error('Unknown message type');
