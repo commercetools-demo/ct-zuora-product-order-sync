@@ -10,7 +10,7 @@ import { logger } from './utils/logger.utils';
 
 import { errorMiddleware } from './middleware/error.middleware';
 
-const PORT = process.env.PORT || 8080;
+const PORT = 8080;
 
 // Create the express app
 const app: Express = express();

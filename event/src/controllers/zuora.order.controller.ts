@@ -1,9 +1,6 @@
 import { OrderCreatedMessagePayload } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
-import {
-  CreateOrderSubscriptionAction,
-  Order,
-} from '../types/zuora.types';
+import { CreateOrderSubscriptionAction, Order } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
 import { validOrder } from '../validators/order-validator';
 const zuoraClient = new ZuoraSandboxClient();

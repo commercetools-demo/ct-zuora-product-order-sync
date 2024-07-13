@@ -2,7 +2,7 @@ import { CustomerCreatedMessagePayload } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { validCustomer } from '../validators/customer-validator.utils';
 import { CURRENCY } from '../constants';
-import {  ZuoraSignupResponse } from '../types/zuora.types';
+import { ZuoraSignupResponse } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
 const zuoraClient = new ZuoraSandboxClient();
 
