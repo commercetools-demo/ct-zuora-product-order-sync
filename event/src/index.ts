@@ -8,8 +8,6 @@ import bodyParser from 'body-parser';
 import EventRoutes from './routes/event.route';
 import { logger } from './utils/logger.utils';
 
-import { errorMiddleware } from './middleware/error.middleware';
-
 const PORT = 8080;
 
 // Create the express app
@@ -24,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/event', EventRoutes);
 
 // Global error handler
-app.use(errorMiddleware);
+// app.use(errorMiddleware);
 
 // Listen the application
 const server = app.listen(PORT, () => {
