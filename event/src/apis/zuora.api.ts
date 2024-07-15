@@ -54,6 +54,7 @@ class ZuoraSandboxClient {
     }
   }
   private async ensureValidToken(): Promise<void> {
+    logger.info('Ensuring valid token');
     if (
       !this.accessToken ||
       !this.tokenExpirationTime ||
@@ -69,8 +70,11 @@ class ZuoraSandboxClient {
     data?: any
   ): Promise<any> {
     await this.ensureValidToken();
+    logger.info(`Using access token: ${this.accessToken}`);
 
     try {
+      logger.info(`Making ${method} request to ${endpoint}`);
+      logger.info(`Data: ${JSON.stringify(data)}`);
       const response = await axios({
         method,
         url: `${this.baseUrl}${endpoint}`,
@@ -80,6 +84,7 @@ class ZuoraSandboxClient {
         },
         data,
       });
+      logger.info(`Response: ${JSON.stringify(response.data)}`);
 
       const result = await response.data;
       if (result.Errors) {

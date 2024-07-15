@@ -18,6 +18,7 @@ const zuoraClient = new ZuoraSandboxClient();
 export const productPublished = async (
   productMessage: ProductPublishedMessagePayload
 ): Promise<void> => {
+  logger.info(`validating product: ${productMessage.productProjection.id}`);
   if (!validProduct(productMessage.productProjection)) {
     return;
   }

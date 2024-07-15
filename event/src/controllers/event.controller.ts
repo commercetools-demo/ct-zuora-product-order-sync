@@ -15,6 +15,7 @@ import { orderCreated } from './zuora.order.controller';
  * @returns
  */
 export const post = async (request: Request, response: Response) => {
+  logger.info('Event received: ', request.body);
   // Check request body
   if (!request.body) {
     logger.error('Missing request body.');
@@ -26,6 +27,7 @@ export const post = async (request: Request, response: Response) => {
     logger.error('Missing body message');
     throw new CustomError(400, 'Bad request: Wrong No Pub/Sub message format');
   }
+  logger.info('Message: ', request.body.message);
 
   // Receive the Pub/Sub message
   const pubSubMessage = request.body.message;
@@ -35,6 +37,8 @@ export const post = async (request: Request, response: Response) => {
   const decodedData = pubSubMessage.data
     ? Buffer.from(pubSubMessage.data, 'base64').toString().trim()
     : undefined;
+
+  logger.info('Decoded data: ', decodedData);
 
   if (decodedData) {
     const jsonData: BasicMessageData = JSON.parse(decodedData);
