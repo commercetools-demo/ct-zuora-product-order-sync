@@ -8,11 +8,11 @@ const eventRouter: Router = Router();
 eventRouter.post('/', async (req, res) => {
   try {
     logger.info('Event received ');
-    post(req, res);
+    await post(req, res);
     res.status(200);
     res.send();
   } catch (error) {
-    res.status(400);
+    res.status(200);
     res.send();
   }
 });

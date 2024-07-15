@@ -48,17 +48,17 @@ export const post = async (request: Request, response: Response) => {
           'Product publishing starts: ',
           jsonData.productProjection.id
         );
-        productPublished(jsonData);
+        await productPublished(jsonData);
         break;
       case 'CustomerCreated':
         logger.info('Customer starts: ', jsonData.customer.id);
-        customerCreated(jsonData);
+        await customerCreated(jsonData);
         break;
 
       case 'OrderCreated':
         logger.info('Customer starts: ', jsonData.order.id);
 
-        orderCreated(jsonData);
+        await orderCreated(jsonData);
         break;
       default:
         logger.error('Unknown message type');
@@ -67,5 +67,5 @@ export const post = async (request: Request, response: Response) => {
   }
 
   // Return the response for the client
-  response.status(204).send();
+  // response.status(204).send();
 };
