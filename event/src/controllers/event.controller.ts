@@ -44,9 +44,6 @@ export const post = async (request: Request) => {
     const jsonData: BasicMessageData = JSON.parse(decodedData);
     logger.info('Notification type' + jsonData.notificationType);
 
-    if (jsonData.notificationType !== 'ResourceCreated') {
-      throw new CustomError(400, 'Bad request: Unknown notification type');
-    }
     logger.info('Project key' + jsonData.projectKey);
 
     if (jsonData.projectKey !== readConfiguration().projectKey) {
@@ -63,6 +60,9 @@ export const post = async (request: Request) => {
         break;
       }
       case 'customer': {
+        if (jsonData.notificationType !== 'ResourceCreated') {
+          throw new CustomError(400, 'Bad request: Unknown notification type');
+        }
         const customer = await getCustomerById(jsonData.resource.id);
         if (customer) {
           logger.info('Customer starts: ' + customer.id);
@@ -71,6 +71,9 @@ export const post = async (request: Request) => {
         break;
       }
       case 'order': {
+        if (jsonData.notificationType !== 'ResourceCreated') {
+          throw new CustomError(400, 'Bad request: Unknown notification type');
+        }
         const order = await getOrderById(jsonData.resource.id);
         if (order) {
           logger.info('Order starts: ' + order.id);
