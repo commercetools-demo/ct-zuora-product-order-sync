@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import { logger } from '../utils/logger.utils';
 import {
   Order,
@@ -29,29 +29,27 @@ class ZuoraSandboxClient {
 
   private async authenticate(): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
+      const response = await axios.post(
+        `${this.baseUrl}/oauth/token`,
+        {
           grant_type: 'client_credentials',
           client_id: this.clientId,
           client_secret: this.clientSecret,
-        }),
-      });
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await response.data;
       this.accessToken = data.access_token;
       // Set token expiration time (subtract 60 seconds as a buffer)
       const expiresIn = data.expires_in || 3600; // Default to 1 hour if not provided
       this.tokenExpirationTime = Date.now() + (expiresIn - 60) * 1000;
     } catch (error) {
-      logger.error('Authentication failed:', error);
+      logger.error('Authentication failed:');
       throw error;
     }
   }
@@ -73,23 +71,24 @@ class ZuoraSandboxClient {
     await this.ensureValidToken();
 
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await axios({
         method,
+        url: `${this.baseUrl}${endpoint}`,
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: data ? JSON.stringify(data) : undefined,
+        data,
       });
 
-      const result = await response.json();
+      const result = await response.data;
       if (result.Errors) {
-        throw new Error(result.Errors[0].Message);
+        throw new Error(result.error);
       }
       return result;
     } catch (error) {
-      logger.error(`Request failed: ${method} ${endpoint}`, error);
-      throw error;
+      logger.error(`Request failed: ${method} ${endpoint}`);
+      throw new Error('BALALA');
     }
   }
 
@@ -166,7 +165,7 @@ class ZuoraSandboxClient {
   ): Promise<ZuoraCrudResponse> {
     return this.makeAuthenticatedRequest(
       'PUT',
-      `/v1/object/product-rate-plan-charge${id}`,
+      `/v1/object/product-rate-plan-charge/${id}`,
       priceData
     );
   }
@@ -176,7 +175,7 @@ class ZuoraSandboxClient {
   ): Promise<ZuoraObjectQueryProductRateChargePlan> {
     return this.makeAuthenticatedRequest(
       'GET',
-      `/object-query/product-rate-plans-charges?filter[]=ProductRatePlanId.EQ:${planId}`
+      `/object-query/product-rate-plan-charges?filter[]=productRatePlanId.EQ:${planId}`
     ).then((data) => data.data?.[0]);
   }
 
