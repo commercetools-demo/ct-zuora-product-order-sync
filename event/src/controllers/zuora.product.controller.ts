@@ -1,7 +1,4 @@
-import {
-  ProductPublishedMessagePayload,
-  ProductVariant,
-} from '@commercetools/platform-sdk';
+import { ProductProjection, ProductVariant } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { logger } from '../utils/logger.utils';
 import {
@@ -16,15 +13,13 @@ const zuoraClient = new ZuoraSandboxClient();
 // Create a product
 
 export const productPublished = async (
-  productMessage: ProductPublishedMessagePayload
+  product: ProductProjection
 ): Promise<void> => {
-  logger.info(`validating product: ${productMessage.productProjection.id}`);
-  if (!validProduct(productMessage.productProjection)) {
+  logger.info(`validating product: ${product.id}`);
+  if (!validProduct(product)) {
     return;
   }
-  const variants = (productMessage.productProjection.variants ?? []).concat(
-    productMessage.productProjection.masterVariant
-  );
+  const variants = (product.variants ?? []).concat(product.masterVariant);
   for await (const variant of variants) {
     if (!variant.sku) continue;
     await zuoraClient
@@ -33,10 +28,10 @@ export const productPublished = async (
         if (result) {
           logger.info(`Updating product`);
 
-          return updateProduct(result, productMessage, variant);
+          return updateProduct(result, product, variant);
         } else {
           logger.info(`Creating product`);
-          return createProduct(productMessage, variant);
+          return createProduct(product, variant);
         }
       })
       .catch((error) => logger.error('Error creating product:', error));
@@ -122,12 +117,12 @@ async function createOrUpdatePrice(
 }
 
 async function createProduct(
-  productMessage: ProductPublishedMessagePayload,
+  product: ProductProjection,
   variant: ProductVariant
 ) {
   const productResult = await zuoraClient.createProduct({
-    Description: productMessage.productProjection.description?.[LOCALE] || '',
-    Name: productMessage.productProjection.name?.[LOCALE] || '',
+    Description: product.description?.[LOCALE] || '',
+    Name: product.name?.[LOCALE] || '',
     EffectiveStartDate: '2020-01-01',
     EffectiveEndDate: '2060-12-31',
     SKU: variant.sku!,
@@ -145,16 +140,13 @@ async function createProduct(
 
 async function updateProduct(
   result: ZuoraObjectQueryProduct,
-  productMessage: ProductPublishedMessagePayload,
+  product: ProductProjection,
   variant: ProductVariant
 ) {
   const productResult = await zuoraClient.updateProductByID(result.id, {
-    Description:
-      productMessage.productProjection.description?.[LOCALE] ||
-      result.description ||
-      '',
+    Description: product.description?.[LOCALE] || result.description || '',
     Id: result.id,
-    Name: productMessage.productProjection.name?.[LOCALE] || result.name || '',
+    Name: product.name?.[LOCALE] || result.name || '',
     SKU: variant.sku!,
   });
 

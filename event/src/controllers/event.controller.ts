@@ -1,10 +1,12 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { BasicMessageData } from '../types/message.types';
 import { productPublished } from './zuora.product.controller';
 import { customerCreated } from './zuora.account.controller';
 import { orderCreated } from './zuora.order.controller';
+import { readConfiguration } from '../utils/config.utils';
+import { getCustomerById, getOrderById, getProductById } from './ct.controller';
 
 /**
  * Exposed event POST endpoint.
@@ -14,8 +16,8 @@ import { orderCreated } from './zuora.order.controller';
  * @param {Response} response The express response
  * @returns
  */
-export const post = async (request: Request, response: Response) => {
-  logger.info('Event received: ', request.body);
+export const post = async (request: Request) => {
+  logger.info('Event received: ' + request.body);
   // Check request body
   if (!request.body) {
     logger.error('Missing request body.');
@@ -27,7 +29,7 @@ export const post = async (request: Request, response: Response) => {
     logger.error('Missing body message');
     throw new CustomError(400, 'Bad request: Wrong No Pub/Sub message format');
   }
-  logger.info('Message: ', request.body.message);
+  logger.info('Message: ' + request.body.message);
 
   // Receive the Pub/Sub message
   const pubSubMessage = request.body.message;
@@ -38,28 +40,45 @@ export const post = async (request: Request, response: Response) => {
     ? Buffer.from(pubSubMessage.data, 'base64').toString().trim()
     : undefined;
 
-  logger.info('Decoded data: ', decodedData);
-
   if (decodedData) {
     const jsonData: BasicMessageData = JSON.parse(decodedData);
-    switch (jsonData.type) {
-      case 'ProductPublished':
-        logger.info(
-          'Product publishing starts: ',
-          jsonData.productProjection.id
-        );
-        await productPublished(jsonData);
-        break;
-      case 'CustomerCreated':
-        logger.info('Customer starts: ', jsonData.customer.id);
-        await customerCreated(jsonData);
-        break;
+    logger.info('Notification type' + jsonData.notificationType);
 
-      case 'OrderCreated':
-        logger.info('Customer starts: ', jsonData.order.id);
+    if (jsonData.notificationType !== 'ResourceCreated') {
+      throw new CustomError(400, 'Bad request: Unknown notification type');
+    }
+    logger.info('Project key' + jsonData.projectKey);
 
-        await orderCreated(jsonData);
+    if (jsonData.projectKey !== readConfiguration().projectKey) {
+      logger.error('Wrong project key');
+      throw new CustomError(400, 'Bad request: Wrong project key');
+    }
+    switch (jsonData.resource.typeId) {
+      case 'product': {
+        const product = await getProductById(jsonData.resource.id);
+        if (product) {
+          logger.info('Product publishing starts: ' + product.id);
+          await productPublished(product);
+        }
         break;
+      }
+      case 'customer': {
+        const customer = await getCustomerById(jsonData.resource.id);
+        if (customer) {
+          logger.info('Customer starts: ' + customer.id);
+          await customerCreated(customer);
+        }
+        break;
+      }
+      case 'order': {
+        const order = await getOrderById(jsonData.resource.id);
+        if (order) {
+          logger.info('Order starts: ' + order.id);
+
+          await orderCreated(order);
+        }
+        break;
+      }
       default:
         logger.error('Unknown message type');
         throw new CustomError(400, 'Bad request: Unknown message type');

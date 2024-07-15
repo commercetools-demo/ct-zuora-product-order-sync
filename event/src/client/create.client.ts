@@ -19,14 +19,3 @@ export const createApiRoot = ((root?: ByProjectKeyRequestBuilder) => () => {
 
   return root;
 })();
-
-/**
- * Example code to get the Project details
- * This code has the same effect as sending a GET
- * request to the commercetools Composable Commerce API without any endpoints.
- *
- * @returns {Promise<ClientResponse<Project>>} apiRoot
- */
-export const getProject = async () => {
-  return await createApiRoot().get().execute();
-};

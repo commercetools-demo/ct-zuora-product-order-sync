@@ -1,4 +1,4 @@
-import { CustomerCreatedMessagePayload } from '@commercetools/platform-sdk';
+import { Customer } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { validCustomer } from '../validators/customer-validator.utils';
 import { CURRENCY } from '../constants';
@@ -7,26 +7,26 @@ import { logger } from '../utils/logger.utils';
 const zuoraClient = new ZuoraSandboxClient();
 
 export const customerCreated = async (
-  customerMessage: CustomerCreatedMessagePayload
+  customer: Customer
 ): Promise<ZuoraSignupResponse> => {
-  if (!validCustomer(customerMessage.customer)) {
+  if (!validCustomer(customer)) {
     throw new Error('Invalid customer');
   }
   const result = await zuoraClient.createAccount({
     accountData: {
-      accountNumber: customerMessage.customer.id,
+      accountNumber: customer.id,
       billCycleDay: 1,
       billToContact: {
-        firstName: customerMessage.customer.firstName!,
-        lastName: customerMessage.customer.lastName!,
-        personalEmail: customerMessage.customer.email!,
-        country: customerMessage.customer.addresses?.[0].country ?? 'US',
-        state: customerMessage.customer.addresses?.[0].state ?? 'CA',
+        firstName: customer.firstName!,
+        lastName: customer.lastName!,
+        personalEmail: customer.email!,
+        country: customer.addresses?.[0].country ?? 'US',
+        state: customer.addresses?.[0].state ?? 'CA',
       },
       autoPay: false,
-      // accountNumber: customerMessage.customer.id,
+      // accountNumber: customer.id,
       currency: CURRENCY,
-      name: customerMessage.customer.email,
+      name: customer.email,
     },
     options: {
       billingTargetDate: new Date().toISOString().split('T')[0],

@@ -1,4 +1,4 @@
-import { OrderCreatedMessagePayload } from '@commercetools/platform-sdk';
+import { Order as CommercetoolsOrder } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { CreateOrderSubscriptionAction, Order } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
@@ -6,15 +6,15 @@ import { validOrder } from '../validators/order-validator';
 const zuoraClient = new ZuoraSandboxClient();
 
 export const orderCreated = async (
-  orderMessage: OrderCreatedMessagePayload
+  order: CommercetoolsOrder
 ): Promise<Order> => {
-  if (!validOrder(orderMessage.order)) {
+  if (!validOrder(order)) {
     throw new Error('Invalid order');
   }
 
   const subscriptions: CreateOrderSubscriptionAction[] = [];
 
-  for await (const item of orderMessage.order.lineItems) {
+  for await (const item of order.lineItems) {
     const productPlanId = await zuoraClient
       .getPlanBySKU(item.variant.sku!)
       .then((result) => result?.id);
@@ -47,9 +47,9 @@ export const orderCreated = async (
   }
 
   const result = await zuoraClient.createOrder({
-    orderNumber: orderMessage.order.id,
-    description: orderMessage.order.id,
-    existingAccountNumber: orderMessage.order.customerId!,
+    orderNumber: order.id,
+    description: order.id,
+    existingAccountNumber: order.customerId!,
     orderDate: new Date().toISOString().split('T')[0],
     subscriptions: subscriptions.map((subscription) => ({
       orderActions: [
@@ -67,6 +67,6 @@ export const orderCreated = async (
     })),
   });
 
-  logger.info(`Created order ${result.orderNumber}`);
+  logger.info(`Created order ${result}`);
   return result;
 };
