@@ -10,8 +10,6 @@ import { getPriceDetails } from '../utils/price.utils';
 import { LOCALE } from '../constants';
 const zuoraClient = new ZuoraSandboxClient();
 
-// Create a product
-
 export const productPublished = async (
   product: ProductProjection
 ): Promise<void> => {
@@ -22,19 +20,7 @@ export const productPublished = async (
   const variants = (product.variants ?? []).concat(product.masterVariant);
   for await (const variant of variants) {
     if (!variant.sku) continue;
-    await zuoraClient
-      .getProductBySKU(variant.sku)
-      .then((result) => {
-        if (result) {
-          logger.info(`Updating product`);
-
-          return updateProduct(result, product, variant);
-        } else {
-          logger.info(`Creating product`);
-          return createProduct(product, variant);
-        }
-      })
-      .catch((error) => logger.error('Error creating product:', error));
+    await createOrUpdateProduct(product, variant);
   }
 };
 
@@ -101,6 +87,29 @@ async function createOrUpdatePrice(
     .catch((error) => logger.error('Error creating product:', error));
 }
 
+async function createOrUpdateProduct(
+  product: ProductProjection,
+  variant: ProductVariant
+) {
+  await zuoraClient
+    .getProductBySKU(variant.sku!)
+    .then((result) => {
+      if (result) {
+        logger.info(`Updating product`);
+
+        return updateProduct(result, product, variant);
+      } else {
+        logger.info(`Creating product`);
+        return createProduct(product, variant);
+      }
+    })
+    .catch(() =>
+      logger.error(
+        'Error creating product: ' + product.id + ' with variant ' + variant.sku
+      )
+    );
+}
+
 async function createProduct(
   product: ProductProjection,
   variant: ProductVariant
@@ -115,7 +124,6 @@ async function createProduct(
 
   logger.info(`Created product ${productResult.Id}`);
 
-  //   return productResult;
   const planResult = await createOrGetPlan(variant, productResult.Id);
 
   const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
@@ -142,8 +150,3 @@ async function updateProduct(
 
   return createPriceResult;
 }
-// export const orderCreated = async (
-//   order: OrderCreatedMessagePayload
-// ): Promise<void> => {
-//   throw new Error('Not implemented');
-// };

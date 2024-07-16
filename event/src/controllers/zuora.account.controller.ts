@@ -6,6 +6,36 @@ import { ZuoraSignupResponse } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
 const zuoraClient = new ZuoraSandboxClient();
 
+export const dummyAccountOptions = {
+  options: {
+    billingTargetDate: new Date().toISOString().split('T')[0],
+    collectPayment: true,
+    maxSubscriptionsPerAccount: 0,
+    runBilling: true,
+  },
+  subscriptionData: {
+    invoiceSeparately: false,
+
+    startDate: new Date().toISOString().split('T')[0],
+    terms: {
+      autoRenew: false,
+      initialTerm: {
+        period: 6,
+        periodType: 'Month',
+        startDate: new Date().toISOString().split('T')[0],
+        termType: 'TERMED',
+      },
+      renewalSetting: 'RENEW_WITH_SPECIFIC_TERM',
+      renewalTerms: [
+        {
+          period: 6,
+          periodType: 'Month',
+        },
+      ],
+    },
+  },
+};
+
 export const customerCreated = async (
   customer: Customer
 ): Promise<ZuoraSignupResponse> => {
@@ -24,37 +54,10 @@ export const customerCreated = async (
         state: customer.addresses?.[0].state ?? 'CA',
       },
       autoPay: false,
-      // accountNumber: customer.id,
       currency: CURRENCY,
       name: customer.email,
     },
-    options: {
-      billingTargetDate: new Date().toISOString().split('T')[0],
-      collectPayment: true,
-      maxSubscriptionsPerAccount: 0,
-      runBilling: true,
-    },
-    subscriptionData: {
-      invoiceSeparately: false,
-
-      startDate: new Date().toISOString().split('T')[0],
-      terms: {
-        autoRenew: false,
-        initialTerm: {
-          period: 6,
-          periodType: 'Month',
-          startDate: new Date().toISOString().split('T')[0],
-          termType: 'TERMED',
-        },
-        renewalSetting: 'RENEW_WITH_SPECIFIC_TERM',
-        renewalTerms: [
-          {
-            period: 6,
-            periodType: 'Month',
-          },
-        ],
-      },
-    },
+    ...dummyAccountOptions,
   });
 
   logger.info(`Created account ${result.accountId}`);

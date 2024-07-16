@@ -3,17 +3,41 @@ import ZuoraSandboxClient from '../apis/zuora.api';
 import { CreateOrderSubscriptionAction, Order } from '../types/zuora.types';
 import { logger } from '../utils/logger.utils';
 import { validOrder } from '../validators/order-validator';
+import { CURRENCY } from '../constants';
+import { dummyAccountOptions } from './zuora.account.controller';
 const zuoraClient = new ZuoraSandboxClient();
 
-export const orderCreated = async (
+const findOrCreateAccount = async (
   order: CommercetoolsOrder
-): Promise<Order> => {
-  if (!validOrder(order)) {
-    throw new Error('Invalid order');
+): Promise<void> => {
+  try {
+    await zuoraClient.getAccountByCustomerId(order.customerId!);
+  } catch (error) {
+    logger.info(`Customer not found. Creating account: ${order.customerId}`);
+    await zuoraClient.createAccount({
+      accountData: {
+        accountNumber: order.customerId!,
+        billCycleDay: 1,
+        billToContact: {
+          firstName: order.billingAddress?.firstName || '',
+          lastName: order.billingAddress?.lastName || '',
+          personalEmail: order.customerEmail || '',
+          country: order.billingAddress?.country || 'US',
+          state: order.billingAddress?.state || 'CA',
+        },
+        autoPay: false,
+        currency: CURRENCY,
+        name: order.customerEmail || '',
+      },
+      ...dummyAccountOptions,
+    });
   }
+};
 
+const getOrderSubscriptionItems = async (
+  order: CommercetoolsOrder
+): Promise<CreateOrderSubscriptionAction[]> => {
   const subscriptions: CreateOrderSubscriptionAction[] = [];
-
   for await (const item of order.lineItems) {
     const productPlanId = await zuoraClient
       .getPlanBySKU(item.variant.sku!)
@@ -46,6 +70,21 @@ export const orderCreated = async (
     });
   }
 
+  return subscriptions;
+};
+
+export const orderCreated = async (
+  order: CommercetoolsOrder
+): Promise<Order> => {
+  if (!validOrder(order)) {
+    throw new Error('Invalid order');
+  }
+
+  await findOrCreateAccount(order);
+
+  const subscriptions: CreateOrderSubscriptionAction[] =
+    await getOrderSubscriptionItems(order);
+
   const result = await zuoraClient.createOrder({
     orderNumber: order.id,
     description: order.id,
@@ -57,7 +96,7 @@ export const orderCreated = async (
           createSubscription: subscription,
           triggerDates: [
             {
-              name: 'InitialTerm',
+              name: 'ContractEffective',
               triggerDate: new Date().toISOString().split('T')[0],
             },
           ],
@@ -67,6 +106,6 @@ export const orderCreated = async (
     })),
   });
 
-  logger.info(`Created order ${result}`);
+  logger.info(`Created order ${result.orderNumber}`);
   return result;
 };

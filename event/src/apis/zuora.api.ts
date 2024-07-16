@@ -92,6 +92,8 @@ class ZuoraSandboxClient {
     }
   }
 
+  ////// PRODUCTS //////
+
   async createProduct(
     productData: Omit<ZuoraProductUpdatePayload, 'Id'>
   ): Promise<ZuoraCrudResponse> {
@@ -101,6 +103,26 @@ class ZuoraSandboxClient {
       productData
     );
   }
+
+  async updateProductByID(
+    id: string,
+    updateData: ZuoraProductUpdatePayload
+  ): Promise<ZuoraCrudResponse> {
+    return this.makeAuthenticatedRequest(
+      'PUT',
+      `/v1/object/product/${id}`,
+      updateData
+    );
+  }
+
+  async getProductBySKU(sku: string): Promise<ZuoraObjectQueryProduct> {
+    return await this.makeAuthenticatedRequest(
+      'GET',
+      `/object-query/products?filter[]=SKU.EQ:${sku}`
+    ).then((data) => data.data?.[0]);
+  }
+
+  ////// PLANS //////
 
   async createPlan(
     planData: ZuoraProductRatePlanPayload
@@ -135,6 +157,8 @@ class ZuoraSandboxClient {
     ).then((data) => data.data?.[0]);
   }
 
+  /////// PRICES //////
+
   async createPrice(
     priceData: ZuoraProductRatePlanChargePayload
   ): Promise<ZuoraCrudResponse> {
@@ -149,20 +173,6 @@ class ZuoraSandboxClient {
     return this.makeAuthenticatedRequest(
       'DELETE',
       `/v1/object/product-rate-plan-charge/${id}`
-    );
-  }
-
-  async createAccount(
-    accountData: ZuoraAccountSignupPayload
-  ): Promise<ZuoraSignupResponse> {
-    return this.makeAuthenticatedRequest('POST', '/v1/sign-up', accountData);
-  }
-
-  async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {
-    return this.makeAuthenticatedRequest(
-      'POST',
-      '/v1/action/accounts',
-      customerId
     );
   }
 
@@ -186,26 +196,33 @@ class ZuoraSandboxClient {
     ).then((data) => data.data?.[0]);
   }
 
-  async updateProductByID(
-    id: string,
-    updateData: ZuoraProductUpdatePayload
-  ): Promise<ZuoraCrudResponse> {
+  /////// ACCOUNTS //////
+
+  async createAccount(
+    accountData: ZuoraAccountSignupPayload
+  ): Promise<ZuoraSignupResponse> {
+    return this.makeAuthenticatedRequest('POST', '/v1/sign-up', accountData);
+  }
+
+  async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {
     return this.makeAuthenticatedRequest(
-      'PUT',
-      `/v1/object/product/${id}`,
-      updateData
+      'get',
+      `/v1/action/accounts/${customerId}`
     );
   }
 
-  async getProductBySKU(sku: string): Promise<ZuoraObjectQueryProduct> {
-    return await this.makeAuthenticatedRequest(
-      'GET',
-      `/object-query/products?filter[]=SKU.EQ:${sku}`
-    ).then((data) => data.data?.[0]);
-  }
+  /////// ORDERS //////
 
   async createOrder(orderData: ZuoraOrderCreatePayload): Promise<Order> {
-    return this.makeAuthenticatedRequest('POST', '/v1/orders', orderData);
+    const result = await this.makeAuthenticatedRequest(
+      'POST',
+      '/v1/orders',
+      orderData
+    );
+    if (!result.success) {
+      throw new Error(result.reasons?.[0]?.message || 'Failed to create order');
+    }
+    return result;
   }
 }
 

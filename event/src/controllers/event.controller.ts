@@ -87,7 +87,4 @@ export const post = async (request: Request) => {
         throw new CustomError(400, 'Bad request: Unknown message type');
     }
   }
-
-  // Return the response for the client
-  // response.status(204).send();
 };
