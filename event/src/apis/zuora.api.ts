@@ -54,7 +54,6 @@ class ZuoraSandboxClient {
     }
   }
   private async ensureValidToken(): Promise<void> {
-    logger.info('Ensuring valid token');
     if (
       !this.accessToken ||
       !this.tokenExpirationTime ||
@@ -70,11 +69,9 @@ class ZuoraSandboxClient {
     data?: any
   ): Promise<any> {
     await this.ensureValidToken();
-    logger.info(`Using access token: ${this.accessToken}`);
 
     try {
       logger.info(`Making ${method} request to ${endpoint}`);
-      logger.info(`Data: ${JSON.stringify(data)}`);
       const response = await axios({
         method,
         url: `${this.baseUrl}${endpoint}`,
@@ -84,8 +81,6 @@ class ZuoraSandboxClient {
         },
         data,
       });
-      logger.info(`Response: ${JSON.stringify(response.data)}`);
-
       const result = await response.data;
       if (result.Errors) {
         throw new Error(result.error);
@@ -93,7 +88,7 @@ class ZuoraSandboxClient {
       return result;
     } catch (error) {
       logger.error(`Request failed: ${method} ${endpoint}`);
-      throw new Error('BALALA');
+      throw new Error((error as any).response.data);
     }
   }
 
@@ -147,6 +142,13 @@ class ZuoraSandboxClient {
       'POST',
       '/v1/object/product-rate-plan-charge',
       priceData
+    );
+  }
+
+  async deletePrice(id: string): Promise<ZuoraCrudResponse> {
+    return this.makeAuthenticatedRequest(
+      'DELETE',
+      `/v1/object/product-rate-plan-charge/${id}`
     );
   }
 

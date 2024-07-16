@@ -38,7 +38,7 @@ export const productPublished = async (
   }
 };
 
-async function createPlan(
+async function createOrGetPlan(
   variant: ProductVariant,
   productId: string
 ): Promise<ZuoraCrudResponse> {
@@ -74,44 +74,29 @@ async function createOrUpdatePrice(
     .getPriceByPlanId(planResultId)
     .then(async (price) => {
       if (price) {
-        const offerName = variant.attributes?.find(
-          (attribute) => attribute.name === 'offeringName'
-        )?.value;
+        // Delete price
 
-        const priceDetails = getPriceDetails(variant);
-
-        const priceResult = await zuoraClient.updatePrice(price.id, {
-          ProductRatePlanId: planResultId,
-          BillCycleType: 'DefaultFromCustomer',
-          ChargeModel: 'Flat Fee Pricing',
-          Name: offerName,
-          UOM: 'each',
-          UseDiscountSpecificAccountingCode: false,
-          ...priceDetails,
-        });
-        logger.info(`Update price ${priceResult.Id}`);
-
-        return priceResult;
-      } else {
-        const offerName = variant.attributes?.find(
-          (attribute) => attribute.name === 'offeringName'
-        )?.value;
-
-        const priceDetails = getPriceDetails(variant);
-
-        const priceResult = await zuoraClient.createPrice({
-          ProductRatePlanId: planResultId,
-          BillCycleType: 'DefaultFromCustomer',
-          ChargeModel: 'Flat Fee Pricing',
-          Name: offerName,
-          UOM: 'each',
-          UseDiscountSpecificAccountingCode: false,
-          ...priceDetails,
-        });
-        logger.info(`Created price ${priceResult.Id}`);
-
-        return priceResult;
+        await zuoraClient.deletePrice(price.id);
+        logger.info(`Deleted price ${price.id}`);
       }
+      const offerName = variant.attributes?.find(
+        (attribute) => attribute.name === 'offeringName'
+      )?.value;
+
+      const priceDetails = getPriceDetails(variant);
+
+      const priceResult = await zuoraClient.createPrice({
+        ProductRatePlanId: planResultId,
+        BillCycleType: 'DefaultFromCustomer',
+        ChargeModel: 'Flat Fee Pricing',
+        Name: offerName,
+        UOM: 'each',
+        UseDiscountSpecificAccountingCode: false,
+        ...priceDetails,
+      });
+      logger.info(`Created price ${priceResult.Id}`);
+
+      return priceResult;
     })
     .catch((error) => logger.error('Error creating product:', error));
 }
@@ -131,7 +116,7 @@ async function createProduct(
   logger.info(`Created product ${productResult.Id}`);
 
   //   return productResult;
-  const planResult = await createPlan(variant, productResult.Id);
+  const planResult = await createOrGetPlan(variant, productResult.Id);
 
   const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
 
@@ -151,7 +136,7 @@ async function updateProduct(
   });
 
   //   return productResult;
-  const planResult = await createPlan(variant, productResult.Id);
+  const planResult = await createOrGetPlan(variant, productResult.Id);
 
   const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
 
