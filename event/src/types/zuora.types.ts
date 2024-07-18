@@ -18,7 +18,55 @@ export type ZuoraObjectQueryProductRatePlan = {
 };
 
 export type ZuoraObjectQueryProductRateChargePlan = {
+  accountReceivableAccountingCodeId: string;
+  accountingCode: string;
+  applyToBillingPeriodPartially: boolean;
+  billCycleType: string;
+  billingPeriod: string;
+  billingPeriodAlignment: string;
+  billingTiming: string;
+  chargeModel: string;
+  chargeType: string;
+  createdById: string;
+  createdDate: string;
+  defaultQuantity: number;
+  deferredRevenueAccount: string;
+  deferredRevenueAccountingCodeId: string;
+  endDateCondition: string;
+  excludeItemBillingFromRevenueAccounting: boolean;
+  excludeItemBookingFromRevenueAccounting: boolean;
   id: string;
+  includedUnits: number;
+  isAllocationEligible: boolean;
+  isCommitted: boolean;
+  isPrepaid: boolean;
+  isRollover: boolean;
+  isStackedDiscount: boolean;
+  isUnbilled: boolean;
+  legacyRevenueReporting: boolean;
+  listPriceBase: string;
+  name: string;
+  numberOfPeriod: number;
+  overageCalculationOption: string;
+  overageUnusedUnitsCreditOption: string;
+  priceChangeOption: string;
+  priceIncreasePercentage: number;
+  priceUpsellQuantityStacked: boolean;
+  productRatePlanChargeNumber: string;
+  productRatePlanId: string;
+  recognizedRevenueAccount: string;
+  recognizedRevenueAccountingCodeId: string;
+  revenueRecognitionRuleName: string;
+  rolloverApply: string;
+  rolloverPeriodLength: number;
+  rolloverPeriods: number;
+  taxable: boolean;
+  triggerEvent: string;
+  upToPeriodsType: string;
+  updatedById: string;
+  updatedDate: string;
+  usageRecordRatingOption: string;
+  useTenantDefaultForPriceChange: boolean;
 };
 
 export type ZuoraProductUpdatePayload = {

@@ -18,10 +18,12 @@ export const productPublished = async (
     return;
   }
   const variants = (product.variants ?? []).concat(product.masterVariant);
-  for await (const variant of variants) {
-    if (!variant.sku) continue;
-    await createOrUpdateProduct(product, variant);
-  }
+
+  await Promise.all(
+    variants
+      .filter((variant) => variant.sku)
+      .map((variant) => createOrUpdateProduct(product, variant))
+  );
 };
 
 async function createOrGetPlan(
@@ -93,13 +95,13 @@ async function createOrUpdateProduct(
 ) {
   await zuoraClient
     .getProductBySKU(variant.sku!)
-    .then((result) => {
-      if (result) {
-        logger.info(`Updating product`);
+    .then((zuoraProduct) => {
+      if (zuoraProduct) {
+        logger.info(`Updating product + variant ${variant.sku}`);
 
-        return updateProduct(result, product, variant);
+        return updateProduct(zuoraProduct, product, variant);
       } else {
-        logger.info(`Creating product`);
+        logger.info(`Creating product + variant ${variant.sku}`);
         return createProduct(product, variant);
       }
     })
@@ -132,19 +134,25 @@ async function createProduct(
 }
 
 async function updateProduct(
-  result: ZuoraObjectQueryProduct,
+  zuoraProduct: ZuoraObjectQueryProduct,
   product: ProductProjection,
   variant: ProductVariant
 ) {
-  const productResult = await zuoraClient.updateProductByID(result.id, {
-    Description: product.description?.[LOCALE] || result.description || '',
-    Id: result.id,
-    Name: product.name?.[LOCALE] || result.name || '',
-    SKU: variant.sku!,
-  });
+  if (
+    zuoraProduct?.description !== product.description?.[LOCALE] ||
+    zuoraProduct?.name !== product.name?.[LOCALE]
+  ) {
+    await zuoraClient.updateProductByID(zuoraProduct.id, {
+      Description:
+        product.description?.[LOCALE] || zuoraProduct.description || '',
+      Id: zuoraProduct.id,
+      Name: product.name?.[LOCALE] || zuoraProduct.name || '',
+      SKU: variant.sku!,
+    });
+  }
 
   //   return productResult;
-  const planResult = await createOrGetPlan(variant, productResult.Id);
+  const planResult = await createOrGetPlan(variant, zuoraProduct.id);
 
   const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
 
