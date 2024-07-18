@@ -6,15 +6,13 @@ import { post } from '../controllers/event.controller';
 const eventRouter: Router = Router();
 
 eventRouter.post('/', async (req, res) => {
+  logger.info('Event received ');
+  res.status(200);
+  res.send();
   try {
-    logger.info('Event received ');
-    res.status(200);
-    res.send();
     await post(req);
   } catch (error) {
     logger.error(error);
-    res.status(200);
-    res.send();
   }
 });
 

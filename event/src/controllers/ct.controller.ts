@@ -22,7 +22,7 @@ export const getProductById = async (
 
     return product;
   } catch (error) {
-    logger.error('cannot find product by id', id);
+    logger.error('cannot find product by id ' + id);
     return null;
   }
 };
@@ -37,7 +37,7 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
 
     return order;
   } catch (error) {
-    logger.error('cannot find order by id', id);
+    logger.error('cannot find order by id ' + id);
     return null;
   }
 };
@@ -52,7 +52,7 @@ export const getCustomerById = async (id: string): Promise<Customer | null> => {
 
     return customer;
   } catch (error) {
-    logger.error('cannot find customer by id', id);
+    logger.error('cannot find customer by id ' + id);
     return null;
   }
 };
