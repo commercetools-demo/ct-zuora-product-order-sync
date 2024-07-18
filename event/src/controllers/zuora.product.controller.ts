@@ -39,6 +39,10 @@ async function createOrGetPlan(
         (attribute) => attribute.name === 'offeringName'
       )?.value;
 
+      if (!offerName) {
+        throw new Error('Offering name not found');
+      }
+
       const planResult = await zuoraClient.createPlan({
         Name: offerName,
         ProductId: productId,
