@@ -187,6 +187,7 @@ export type ZuoraOrderCreatePayload = {
     customFields?: {
       [key: string]: string;
     };
+    currency: string;
     deferredRevenueAccountingCode: string;
     description: string;
     itemName: string;
@@ -220,7 +221,7 @@ export type ZuoraOrderCreatePayload = {
     };
     runBilling: boolean;
   };
-  subscriptions: Array<{
+  subscriptions?: Array<{
     orderActions: Array<{
       createSubscription: CreateOrderSubscriptionAction;
       triggerDates: Array<{
@@ -242,7 +243,7 @@ export interface CreateOrderSubscriptionAction {
     }>;
     productRatePlanId: string;
     uniqueToken?: string;
-    subscriptionRatePlanNumber: string;
+    subscriptionRatePlanNumber?: string;
   }>;
   subscriptionNumber?: string;
   terms: {
@@ -272,7 +273,7 @@ export type Order = {
   paidAmount: number;
   paymentNumber: string;
   status: string;
-  subscriptions: {
+  subscriptions?: {
     status: string;
     subscriptionNumber: string;
     subscriptionOwnerNumber: string;

@@ -38,7 +38,6 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
     return order;
   } catch (error) {
     logger.error('cannot find order by id ' + id);
-    console.error(error);
     return null;
   }
 };

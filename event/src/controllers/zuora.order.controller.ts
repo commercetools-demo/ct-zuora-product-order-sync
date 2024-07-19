@@ -62,9 +62,6 @@ const getOrderSubscriptionItems = async (
       subscribeToRatePlans: [
         {
           productRatePlanId: productPlanId,
-          subscriptionRatePlanNumber: await zuoraClient
-            .getPriceByPlanId(productPlanId)
-            .then((result) => result?.id),
         },
       ],
     });

@@ -205,10 +205,7 @@ class ZuoraSandboxClient {
   }
 
   async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {
-    return this.makeAuthenticatedRequest(
-      'get',
-      `/v1/action/accounts/${customerId}`
-    );
+    return this.makeAuthenticatedRequest('get', `/v1/accounts/${customerId}`);
   }
 
   /////// ORDERS //////
