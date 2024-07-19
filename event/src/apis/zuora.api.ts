@@ -205,7 +205,15 @@ class ZuoraSandboxClient {
   }
 
   async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {
-    return this.makeAuthenticatedRequest('get', `/v1/accounts/${customerId}`);
+    return this.makeAuthenticatedRequest(
+      'get',
+      `/v1/accounts/${customerId}`
+    ).then((res) => {
+      if (!res.success) {
+        throw new Error(res.reasons?.[0]?.message || 'Failed to get account');
+      }
+      return res;
+    });
   }
 
   /////// ORDERS //////
