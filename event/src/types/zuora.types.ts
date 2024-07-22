@@ -15,6 +15,80 @@ export type ZuoraObjectQueryProduct = {
 
 export type ZuoraObjectQueryProductRatePlan = {
   id: string;
+  status: string;
+  name: string;
+  description: string | null;
+  effectiveStartDate: string;
+  effectiveEndDate: string;
+  externalIdSourceSystem: string;
+  externallyManagedPlanIds: string[];
+  productRatePlanCharges: ZuoraObjectQueryProductRateCharge[];
+  productRatePlanNumber: string;
+};
+
+export type ZuoraObjectQueryProductRateCharge = {
+  id: string;
+  name: string;
+  type: string;
+  model: string;
+  uom: string | null;
+  pricingSummary: string[];
+  pricing: {
+    currency: string;
+    price: number;
+    tiers: null;
+    includedUnits: number;
+    overagePrice: null;
+    discountPercentage: null;
+    discountAmount: null;
+  }[];
+  defaultQuantity: null;
+  applyDiscountTo: null;
+  discountLevel: null;
+  discountClass: null;
+  productDiscountApplyDetails: any[];
+  endDateCondition: string;
+  upToPeriods: null;
+  upToPeriodsType: null;
+  billingDay: string;
+  listPriceBase: string;
+  specificListPriceBase: null;
+  billingTiming: string;
+  ratingGroup: null;
+  billingPeriod: string;
+  billingPeriodAlignment: string;
+  specificBillingPeriod: null;
+  smoothingModel: null;
+  numberOfPeriods: null;
+  overageCalculationOption: null;
+  overageUnusedUnitsCreditOption: null;
+  unusedIncludedUnitPrice: null;
+  usageRecordRatingOption: null;
+  priceChangeOption: null;
+  priceIncreasePercentage: null;
+  useTenantDefaultForPriceChange: null;
+  taxable: boolean;
+  taxCode: null;
+  taxMode: null;
+  prorationOption: null;
+  triggerEvent: string;
+  description: null;
+  revRecCode: null;
+  revRecTriggerCondition: null;
+  revenueRecognitionRuleName: string;
+  useDiscountSpecificAccountingCode: null;
+  financeInformation: {
+    deferredRevenueAccountingCode: string;
+    deferredRevenueAccountingCodeType: string;
+    recognizedRevenueAccountingCode: string;
+    recognizedRevenueAccountingCodeType: string;
+    accountsReceivableAccountingCode: string;
+    accountsReceivableAccountingCodeType: string;
+  };
+  deliverySchedule: null;
+  reflectDiscountInNetAmount: boolean;
+  isStackedDiscount: boolean;
+  productRatePlanChargeNumber: string;
 };
 
 export type ZuoraObjectQueryProductRateChargePlan = {

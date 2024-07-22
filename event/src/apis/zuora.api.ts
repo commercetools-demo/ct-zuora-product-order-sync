@@ -153,8 +153,8 @@ class ZuoraSandboxClient {
   ): Promise<ZuoraObjectQueryProductRatePlan> {
     return this.makeAuthenticatedRequest(
       'GET',
-      `/object-query/product-rate-plans?filter[]=ProductId.EQ:${productId}`
-    ).then((data) => data.data?.[0]);
+      `/v1/catalog/products/${productId}`
+    ).then((data) => data.productRatePlans?.[0]);
   }
 
   /////// PRICES //////
@@ -173,7 +173,12 @@ class ZuoraSandboxClient {
     return this.makeAuthenticatedRequest(
       'DELETE',
       `/v1/object/product-rate-plan-charge/${id}`
-    );
+    ).then((response) => {
+      if (!response.success) {
+        throw new Error('Error deleting price');
+      }
+      return response;
+    });
   }
 
   async updatePrice(
@@ -201,7 +206,18 @@ class ZuoraSandboxClient {
   async createAccount(
     accountData: ZuoraAccountSignupPayload
   ): Promise<ZuoraSignupResponse> {
-    return this.makeAuthenticatedRequest('POST', '/v1/sign-up', accountData);
+    return this.makeAuthenticatedRequest(
+      'POST',
+      '/v1/sign-up',
+      accountData
+    ).then((res) => {
+      if (!res.success) {
+        throw new Error(
+          res.reasons?.[0]?.message || 'Failed to create account'
+        );
+      }
+      return res;
+    });
   }
 
   async getAccountByCustomerId(customerId: string): Promise<ZuoraCrudResponse> {

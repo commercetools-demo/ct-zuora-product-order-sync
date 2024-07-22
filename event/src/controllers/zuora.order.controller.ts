@@ -19,8 +19,8 @@ const findOrCreateAccount = async (
         accountNumber: order.customerId!,
         billCycleDay: 1,
         billToContact: {
-          firstName: order.billingAddress?.firstName || '',
-          lastName: order.billingAddress?.lastName || '',
+          firstName: order.billingAddress?.firstName || 'CANNOT BE EMPTY',
+          lastName: order.billingAddress?.lastName || 'CANNOT BE EMPTY',
           personalEmail: order.customerEmail || '',
           country: order.billingAddress?.country || 'US',
           state: order.billingAddress?.state || 'CA',

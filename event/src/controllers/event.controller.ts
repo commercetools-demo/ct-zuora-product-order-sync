@@ -51,7 +51,12 @@ export const post = async (request: Request) => {
       throw new CustomError(400, 'Bad request: Wrong project key');
     }
 
-    logger.info('Resource typeID: ' + jsonData.resource.typeId + ' - ID: ' + jsonData.resource.id);
+    logger.info(
+      'Resource typeID: ' +
+        jsonData.resource.typeId +
+        ' - ID: ' +
+        jsonData.resource.id
+    );
     switch (jsonData.resource.typeId) {
       case 'product': {
         const product = await getProductById(jsonData.resource.id);

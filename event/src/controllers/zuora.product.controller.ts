@@ -2,8 +2,8 @@ import { ProductProjection, ProductVariant } from '@commercetools/platform-sdk';
 import ZuoraSandboxClient from '../apis/zuora.api';
 import { logger } from '../utils/logger.utils';
 import {
-  ZuoraCrudResponse,
   ZuoraObjectQueryProduct,
+  ZuoraObjectQueryProductRatePlan,
 } from '../types/zuora.types';
 import { validProduct } from '../validators/product-validator.utils';
 import { getPriceDetails } from '../utils/price.utils';
@@ -29,13 +29,10 @@ export const productPublished = async (
 async function createOrGetPlan(
   variant: ProductVariant,
   productId: string
-): Promise<ZuoraCrudResponse> {
+): Promise<ZuoraObjectQueryProductRatePlan> {
   return zuoraClient.getPlanByProductId(productId).then(async (plan) => {
     if (plan) {
-      return {
-        Id: plan.id,
-        Success: true,
-      };
+      return plan;
     } else {
       const offerName = variant.attributes?.find(
         (attribute) => attribute.name === 'offeringName'
@@ -51,46 +48,64 @@ async function createOrGetPlan(
       });
       logger.info(`Created plan ${planResult.Id}`);
 
-      return planResult;
+      return zuoraClient.getPlanByProductId(productId);
     }
   });
 }
 
 async function createOrUpdatePrice(
   variant: ProductVariant,
-  planResultId: string
+  plan: ZuoraObjectQueryProductRatePlan
 ) {
   if (variant.prices?.length === 0) return null;
 
-  await zuoraClient
-    .getPriceByPlanId(planResultId)
-    .then(async (price) => {
-      if (price) {
-        // Delete price
+  const offerName = variant.attributes?.find(
+    (attribute) => attribute.name === 'offeringName'
+  )?.value;
 
-        await zuoraClient.deletePrice(price.id);
-        logger.info(`Deleted price ${price.id}`);
-      }
-      const offerName = variant.attributes?.find(
-        (attribute) => attribute.name === 'offeringName'
-      )?.value;
+  const noRatePlanCharge = plan.productRatePlanCharges?.length === 0;
 
-      const priceDetails = getPriceDetails(variant);
+  if (noRatePlanCharge) {
+    // Create price
+    const priceDetails = getPriceDetails(variant);
 
-      const priceResult = await zuoraClient.createPrice({
-        ProductRatePlanId: planResultId,
-        BillCycleType: 'DefaultFromCustomer',
-        ChargeModel: 'Flat Fee Pricing',
-        Name: offerName,
-        UOM: 'each',
-        UseDiscountSpecificAccountingCode: false,
-        ...priceDetails,
-      });
-      logger.info(`Created price ${priceResult.Id}`);
+    const priceResult = await zuoraClient.createPrice({
+      ProductRatePlanId: plan.id,
+      BillCycleType: 'DefaultFromCustomer',
+      ChargeModel: 'Flat Fee Pricing',
+      Name: offerName,
+      UOM: 'each',
+      UseDiscountSpecificAccountingCode: false,
+      ...priceDetails,
+    });
+    logger.info(`Created price ${priceResult.Id}`);
+    return;
+  }
 
-      return priceResult;
-    })
-    .catch((error) => logger.error('Error creating product:', error));
+  const ratePlanCharge = plan.productRatePlanCharges?.[0];
+
+  if (
+    ratePlanCharge.pricing?.[0]?.price?.toFixed(2) !==
+    ((variant.prices?.[0].value?.centAmount ?? 0) / 100).toFixed(2)
+  ) {
+    logger.info(`Price with different value found`);
+    await zuoraClient.deletePrice(ratePlanCharge.id);
+    logger.info(`Deleted price ${ratePlanCharge.id}`);
+    const priceDetails = getPriceDetails(variant);
+
+    const priceResult = await zuoraClient.createPrice({
+      ProductRatePlanId: plan.id,
+      BillCycleType: 'DefaultFromCustomer',
+      ChargeModel: 'Flat Fee Pricing',
+      Name: offerName,
+      UOM: 'each',
+      UseDiscountSpecificAccountingCode: false,
+      ...priceDetails,
+    });
+    logger.info(`Created price ${priceResult.Id}`);
+    return;
+  }
+  logger.info(`Price already exists ${ratePlanCharge.id}`);
 }
 
 async function createOrUpdateProduct(
@@ -132,7 +147,7 @@ async function createProduct(
 
   const planResult = await createOrGetPlan(variant, productResult.Id);
 
-  const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
+  const createPriceResult = await createOrUpdatePrice(variant, planResult);
 
   return createPriceResult;
 }
@@ -158,7 +173,7 @@ async function updateProduct(
   //   return productResult;
   const planResult = await createOrGetPlan(variant, zuoraProduct.id);
 
-  const createPriceResult = await createOrUpdatePrice(variant, planResult.Id);
+  const createPriceResult = await createOrUpdatePrice(variant, planResult);
 
   return createPriceResult;
 }
